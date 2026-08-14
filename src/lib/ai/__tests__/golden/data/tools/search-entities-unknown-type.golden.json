@@ -1,0 +1,4 @@
+{
+  "success": false,
+  "error": "Unknown entity type: unknown. Valid types: technology, company, useCase, prototype, strategy, orgUnit, initiative, painPoint"
+}

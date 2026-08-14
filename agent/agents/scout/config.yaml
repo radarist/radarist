@@ -1,0 +1,26 @@
+name: scout
+description: 'Discovers new signals, companies, and technologies through web research, browser automation, and academic sources'
+model: claude-sonnet-4-6
+budget:
+  max_tokens: 30000
+  max_tool_calls: 50
+mcp_servers:
+  internal:
+    - impulse-signals
+    # Keyless primary-source research (patents / HN / papers / SEC / OSS-health) —
+    # backs the read-patent-landscape / assess-research-momentum / oss-project-health
+    # discovery skills. Without it those skills have the method but no backing tool.
+    - impulse-research
+  external:
+    - gemini-grounding
+    - gemini-research
+    - arxiv
+    - exa
+    - firecrawl
+    - playwright
+    - github
+
+# Task 0.10: SDK 0.2.109 subagent controls
+max_turns: 30
+effort: high
+permission_mode: acceptEdits

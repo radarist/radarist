@@ -1,0 +1,22 @@
+{
+  "success": true,
+  "data": {
+    "entityType": "company",
+    "query": "acme",
+    "count": 1,
+    "results": [
+      {
+        "id": "c1",
+        "name": "Acme Corp",
+        "description": "Technology solutions provider",
+        "type": "company",
+        "metadata": {
+          "type": "vendor",
+          "status": "active",
+          "industry": ["Technology"],
+          "size": "medium"
+        }
+      }
+    ]
+  }
+}

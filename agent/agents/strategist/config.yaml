@@ -1,0 +1,29 @@
+name: strategist
+description: 'Analyzes patterns, connects trends to strategy, generates proactive insights'
+model: claude-opus-4-8
+budget:
+  max_tokens: 30000
+  max_tool_calls: 20
+mcp_servers:
+  internal:
+    - impulse-radar
+    - impulse-signals
+    # Keyless primary-source research (papers / patents) for capability-trajectory
+    # evidence behind strategic-timing calls.
+    - impulse-research
+  external:
+    # Strategic outputs (Wardley maps, three-horizons, scenarios, risk matrices)
+    # are diagram-bearing — wire super-graph so strategist analyses can render
+    # tech-radar / risk-matrix / sankey / mindmap inline rather than describing
+    # them in prose. Listed first so the SDK ranks it highly for diagram intent.
+    - super-graph
+    - exa
+    - arxiv
+    - gemini-grounding
+
+# Task 0.10: SDK 0.2.109 subagent controls
+max_turns: 15
+effort: high
+permission_mode: acceptEdits
+# Strategic chains invoke 6–12 skills. Opt into 90 min for deep analyses.
+timeoutMinutes: 90

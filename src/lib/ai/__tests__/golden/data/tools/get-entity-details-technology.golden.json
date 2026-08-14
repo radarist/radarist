@@ -1,0 +1,15 @@
+{
+  "success": true,
+  "data": {
+    "id": "tech-42",
+    "name": "React",
+    "description": "A declarative, efficient, and flexible JavaScript library for building user interfaces",
+    "category": "framework",
+    "tags": [
+      "frontend",
+      "javascript",
+      "ui"
+    ],
+    "_type": "technology"
+  }
+}

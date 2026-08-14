@@ -1,0 +1,27 @@
+{
+  "success": true,
+  "data": {
+    "signals": [
+      {
+        "id": "signal-1",
+        "title": "New AI Framework Released",
+        "type": "news",
+        "status": "Detected",
+        "source": "TechCrunch",
+        "relevanceScore": 85
+      },
+      {
+        "id": "signal-2",
+        "title": "Patent: Quantum Computing Method",
+        "type": "patent",
+        "status": "Detected",
+        "source": "USPTO",
+        "relevanceScore": 72
+      }
+    ],
+    "total": 2,
+    "filters": {
+      "status": "Detected"
+    }
+  }
+}

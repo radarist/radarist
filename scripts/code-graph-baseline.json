@@ -1,0 +1,35 @@
+{
+  "externalEntrypoints": [
+    "scripts/generate-capability-catalog.ts",
+    "scripts/recover-interrupted-job-runs.ts"
+  ],
+  "cycleMembers": [
+    "src/lib/ai/client.ts",
+    "src/lib/ai/reliability.ts",
+    "src/lib/ai/tools/entity-creation.ts",
+    "src/lib/ai/tools/web-research.ts",
+    "src/lib/companies.ts",
+    "src/lib/document-service.ts",
+    "src/lib/entity-reality-check.ts",
+    "src/lib/firebase.ts",
+    "src/lib/initiatives.ts",
+    "src/lib/org-units.ts",
+    "src/lib/pain-points.ts",
+    "src/lib/prototypes.ts",
+    "src/lib/radar-placement-service.ts",
+    "src/lib/radars.ts",
+    "src/lib/relations-validation.ts",
+    "src/lib/relations.ts",
+    "src/lib/signals-admin.ts",
+    "src/lib/signals/enrich-on-like.ts",
+    "src/lib/signals/feedback.ts",
+    "src/lib/strategies.ts",
+    "src/lib/technology-core.ts",
+    "src/lib/technology-research.ts",
+    "src/lib/technology-service.ts",
+    "src/lib/use-cases.ts"
+  ],
+  "orphans": [],
+  "boundary": [],
+  "unresolved": []
+}

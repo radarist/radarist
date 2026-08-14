@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 3,
+  "ratchets": {
+    "directCatchFalseMax": 0,
+    "fixedWaitMax": 0,
+    "discoveryMinByLane": {
+      "generic": 46,
+      "accessibility": 9,
+      "local-smoke": 3,
+      "report-publication": 11
+    }
+  },
+  "lanes": [
+    {
+      "id": "generic",
+      "status": "active",
+      "command": "e2e",
+      "config": "playwright.config.ts",
+      "contract": {
+        "firebase": "owned-auth-firestore-storage-showcase",
+        "neo4j": "disabled",
+        "inngest": "disabled",
+        "provider": "disabled",
+        "externalNetwork": "browser-forbidden",
+        "cleanup": "emulator-process"
+      },
+      "specs": [
+        "tests/e2e/audit-harness-failsafe.spec.ts",
+        "tests/e2e/redirect-integrity.spec.ts",
+        "tests/e2e/report-preview-security.spec.ts",
+        "tests/e2e/route-integrity.spec.ts",
+        "tests/e2e/smoke.test.ts"
+      ]
+    },
+    {
+      "id": "accessibility",
+      "status": "active",
+      "command": "e2e:accessibility",
+      "config": "playwright.config.ts",
+      "contract": {
+        "firebase": "owned-auth-firestore-storage-showcase",
+        "neo4j": "disabled",
+        "inngest": "disabled",
+        "provider": "disabled",
+        "externalNetwork": "browser-forbidden",
+        "cleanup": "emulator-process"
+      },
+      "specs": [
+        "tests/e2e/accessibility-sweep.spec.ts"
+      ]
+    },
+    {
+      "id": "local-smoke",
+      "status": "manual",
+      "command": "e2e:local",
+      "config": "playwright.config.ts",
+      "contract": {
+        "firebase": "operator-selected",
+        "neo4j": "operator-selected",
+        "inngest": "operator-selected",
+        "provider": "not-invoked-caller-owned",
+        "externalNetwork": "browser-loopback-only",
+        "cleanup": "none"
+      },
+      "specs": [
+        "tests/e2e/local-smoke.spec.ts"
+      ]
+    },
+    {
+      "id": "report-publication",
+      "status": "active",
+      "command": "e2e:report-publication",
+      "config": "playwright.config.ts",
+      "contract": {
+        "firebase": "none",
+        "neo4j": "none",
+        "inngest": "none",
+        "provider": "none",
+        "externalNetwork": "browser-forbidden",
+        "cleanup": "none"
+      },
+      "specs": [
+        "tests/e2e/report-publication-conformance.spec.ts"
+      ]
+    }
+  ],
+  "retiredSpecs": [],
+  "assertionReviews": []
+}

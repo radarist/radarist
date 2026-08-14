@@ -1,0 +1,14 @@
+# Seeded into the mission workspace as .gitignore by the provisioner
+# (Phase 0 scratch runs copy it manually — see the Phase 0 protocol doc).
+node_modules/
+dist/
+test-results/
+playwright-report/
+session-*.jsonl
+*.stderr.log
+*.exitcode
+stderr.log
+stderr-*.log
+.impulse/.stop-attempts
+.impulse/force-stop
+.playwright-mcp/

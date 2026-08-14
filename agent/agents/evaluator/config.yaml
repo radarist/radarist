@@ -1,0 +1,22 @@
+name: evaluator
+description: 'Scores technologies, assesses maturity (TRL), and validates claims with evidence'
+model: claude-sonnet-4-6
+budget:
+  max_tokens: 25000
+  max_tool_calls: 25
+mcp_servers:
+  internal:
+    - impulse-signals
+    - impulse-radar
+    # Keyless primary-source evidence (papers / patents / SEC filings) for validating
+    # or challenging maturity/claim assessments.
+    - impulse-research
+  external:
+    - arxiv
+    - github
+    - gemini-grounding
+
+# Task 0.10: SDK 0.2.109 subagent controls
+max_turns: 15
+effort: medium
+permission_mode: acceptEdits

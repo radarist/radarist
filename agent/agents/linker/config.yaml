@@ -1,0 +1,16 @@
+name: linker
+description: 'Discovers and validates relationships between entities in the knowledge graph'
+model: claude-sonnet-4-6
+budget:
+  max_tokens: 20000
+  max_tool_calls: 25
+mcp_servers:
+  internal:
+    - impulse-signals
+  external:
+    - exa
+
+# Task 0.10: SDK 0.2.109 subagent controls
+max_turns: 20
+effort: medium
+permission_mode: acceptEdits

@@ -1,0 +1,19 @@
+name: defense-minister
+description: 'Data quality verifier — continuous entity validation, staleness detection, and fact-checking against web sources'
+model: claude-haiku-4-5
+budget:
+  max_tokens: 15000
+  max_tool_calls: 30
+mcp_servers:
+  internal:
+    - impulse-entities
+    - impulse-graph
+  external:
+    - gemini-grounding
+    - exa
+    - firecrawl
+
+# Task 0.10: SDK 0.2.109 subagent controls
+max_turns: 20
+effort: low
+permission_mode: acceptEdits

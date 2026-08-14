@@ -1,0 +1,160 @@
+// ============================================================================
+// EMULATOR-ONLY RULES — DO NOT DEPLOY TO A REAL FIRESTORE INSTANCE.
+// ============================================================================
+//
+// Radarist ships as a local-first showcase prototype. These rules grant
+// unrestricted read/write (except the apiKeys collection — see below) because
+// the only intended target is the Firebase emulator started by
+// `npm run firebase:emulators` / `npm run demo`.
+//
+// Deploying this rules file to a hosted Firebase project would expose all
+// documents to the public internet. Anyone planning a hosted deployment
+// must replace this file with least-privilege rules (e.g., require
+// `request.auth != null` for writes, scope owned docs by `request.auth.uid`).
+//
+// See: docs/LIMITATIONS.md ("Security Limitations") and SECURITY.md.
+// ============================================================================
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // The local runtime writes this control document with the Admin SDK while
+    // it takes a verified Firebase checkpoint. Browser SDK writes are held for
+    // that short window to reduce cross-service drift during the full export.
+    // Admin SDK and Auth writes are outside this rule-level barrier.
+    // The expiry is mandatory: an interrupted launcher cannot leave a durable
+    // workspace permanently read-only.
+    function checkpointBarrierActive() {
+      return exists(/databases/$(database)/documents/__radaristRuntime/checkpointBarrier)
+        && get(/databases/$(database)/documents/__radaristRuntime/checkpointBarrier).data.active == true
+        && request.time < get(/databases/$(database)/documents/__radaristRuntime/checkpointBarrier).data.expiresAt;
+    }
+
+    // apiKeys holds hashed MCP API keys and their permission scopes. Every
+    // legitimate access is via the Admin SDK (server / API routes), which
+    // bypasses these rules, so denying direct client access costs nothing and
+    // restores the "an admin key cannot be self-assigned" guard that the
+    // wide-open rule below would otherwise void.
+    //
+    // Firestore rules are ADDITIVE: a sibling `match /apiKeys { if false }`
+    // would NOT remove the grant from a `/{document=**}: if true` wildcard, so
+    // the broad rule itself must EXCLUDE apiKeys via its condition.
+    match /apiKeys/{keyId} {
+      allow read, write: if false;
+    }
+
+    // Runtime coordination state is server-owned even in emulator mode. It is
+    // intentionally not part of the product data surface.
+    match /__radaristRuntime/{document=**} {
+      allow read, write: if false;
+    }
+
+    // ARUN-022: operationReceipts is a server-owned durable provider-usage
+    // ledger written and read ONLY through the Admin SDK (which bypasses these
+    // rules). No browser/client path is legitimate, so deny all direct access.
+    // Rules are ADDITIVE — like apiKeys, this explicit deny is NOT enough on its
+    // own; the wide-open `match /{collection}/{document=**}` fallback below must
+    // also EXCLUDE 'operationReceipts' from its read/write conditions.
+    match /operationReceipts/{receiptId} {
+      allow read, write: if false;
+    }
+
+    // ARUN-022: operationSettlements is the server-owned, append-only provider
+    // actual/invoice ledger — same server-only Admin-SDK access as receipts. Deny
+    // all direct client access AND exclude it from the fallback grants below.
+    match /operationSettlements/{settlementId} {
+      allow read, write: if false;
+    }
+
+    // ARUN-022: operationAccountingMarkers is the server-owned durable marker of
+    // whether a parent's nested spend was fully recorded — same server-only
+    // Admin-SDK access as receipts. Deny all direct client access AND exclude it
+    // from the fallback grants below.
+    match /operationAccountingMarkers/{markerId} {
+      allow read, write: if false;
+    }
+
+    // AI-043: companyReviewEvents is the server-owned human source-review ledger,
+    // written and read ONLY through the Admin SDK (which bypasses these rules). No
+    // browser/client path is legitimate, so deny all direct access. Rules are
+    // ADDITIVE — like operationReceipts/apiKeys, this explicit deny is NOT enough
+    // on its own; the wide-open `match /{collection}/{document=**}` fallback below
+    // must ALSO EXCLUDE 'companyReviewEvents' from its read/write conditions.
+    match /companyReviewEvents/{eventId} {
+      allow read, write: if false;
+    }
+
+    // Document deletion uses an Admin-SDK lease acquired in the same
+    // transaction that reads uploadedBy/storageUrl. Direct clients cannot see
+    // or forge the marker. Once present, no browser update/delete can race the
+    // server cascade; retries keep the marker until parent deletion converges.
+    match /documentDeletionLeases/{documentId} {
+      allow read, write: if false;
+    }
+
+    match /documents/{documentId} {
+      allow read: if true;
+      allow create: if !checkpointBarrierActive();
+      allow update: if !checkpointBarrierActive()
+        && !exists(/databases/$(database)/documents/documentDeletionLeases/$(documentId))
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['uploadedBy', 'storageUrl']);
+      allow delete: if !checkpointBarrierActive()
+        && !exists(/databases/$(database)/documents/documentDeletionLeases/$(documentId));
+    }
+
+    // GRAPH-060/066 #11 — RadarPlacement mutations are now fully server-routed
+    // through authenticated same-origin APIs (Admin SDK, which bypasses these
+    // rules). Direct browser WRITES to radarPlacements are no longer legitimate,
+    // but the UI still READS placements via the client SDK, so read stays open.
+    // Rules are ADDITIVE, so radarPlacements is EXCLUDED from the wide-open
+    // fallback's write condition below and gets an explicit read-only rule here.
+    match /radarPlacements/{placementId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // The pair-identity lock and the delete tombstone are server-owned identity
+    // state — written and read ONLY through the Admin SDK. No browser path is
+    // legitimate, so deny all direct client access. Like apiKeys, the wide-open
+    // fallback must ALSO exclude these collections (rules are additive).
+    match /radarPlacementPairs/{document=**} {
+      allow read, write: if false;
+    }
+    match /radarPlacementDeleteOutbox/{document=**} {
+      allow read, write: if false;
+    }
+    // Parent (radar/technology) cascade-deletion barrier — server-owned; a client
+    // must never read or forge it.
+    match /placementParentDeletionLeases/{document=**} {
+      allow read, write: if false;
+    }
+
+    // Everything else stays wide open — EMULATOR ONLY (see header).
+    match /{collection}/{document=**} {
+      allow read: if collection != 'apiKeys'
+        && collection != '__radaristRuntime'
+        && collection != 'operationReceipts'
+        && collection != 'operationSettlements'
+        && collection != 'operationAccountingMarkers'
+        && collection != 'companyReviewEvents'
+        && collection != 'documentDeletionLeases'
+        && collection != 'radarPlacementPairs'
+        && collection != 'radarPlacementDeleteOutbox'
+        && collection != 'placementParentDeletionLeases';
+      allow write: if collection != 'apiKeys'
+        && collection != '__radaristRuntime'
+        && collection != 'operationReceipts'
+        && collection != 'operationSettlements'
+        && collection != 'operationAccountingMarkers'
+        && collection != 'companyReviewEvents'
+        && collection != 'documentDeletionLeases'
+        && collection != 'documents'
+        && collection != 'radarPlacements'
+        && collection != 'radarPlacementPairs'
+        && collection != 'radarPlacementDeleteOutbox'
+        && collection != 'placementParentDeletionLeases'
+        && !checkpointBarrierActive();
+    }
+  }
+}

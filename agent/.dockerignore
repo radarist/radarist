@@ -1,0 +1,9 @@
+node_modules
+dist
+tests
+coverage
+.git
+*.test.ts
+*.spec.ts
+jest.config.ts
+CLAUDE.md

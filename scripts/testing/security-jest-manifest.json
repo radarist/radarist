@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "suites": [
+    {
+      "control": "authentication-and-authorization",
+      "file": "src/lib/__tests__/auth-utils.test.ts"
+    },
+    {
+      "control": "authentication-and-authorization",
+      "file": "src/__tests__/middleware.test.ts"
+    },
+    {
+      "control": "authentication-and-authorization",
+      "file": "src/app/api/__tests__/security/auth-bypass.test.ts"
+    },
+    {
+      "control": "authentication-and-authorization",
+      "file": "src/lib/__tests__/fetch-with-auth.test.ts"
+    },
+    {
+      "control": "api-input-validation",
+      "file": "src/app/api/__tests__/security/input-validation.test.ts"
+    },
+    {
+      "control": "api-key-lifecycle-and-permissions",
+      "file": "src/lib/mcp/__tests__/api-keys.test.ts"
+    },
+    {
+      "control": "api-key-lifecycle-and-permissions",
+      "file": "src/app/api/mcp/keys/__tests__/route.test.ts"
+    },
+    {
+      "control": "api-key-lifecycle-and-permissions",
+      "file": "src/app/api/mcp/[server]/__tests__/route.test.ts"
+    },
+    {
+      "control": "api-key-lifecycle-and-permissions",
+      "file": "src/lib/mcp/__tests__/permissions.test.ts"
+    },
+    {
+      "control": "api-key-lifecycle-and-permissions",
+      "file": "src/lib/mcp/__tests__/tool-permission-coverage.test.ts"
+    },
+    {
+      "control": "destructive-confirmation",
+      "file": "src/lib/ai/__tests__/destructive-confirmation.test.ts"
+    },
+    {
+      "control": "destructive-confirmation",
+      "file": "scripts/__tests__/disposable-demo-runtime.test.ts"
+    },
+    {
+      "control": "destructive-confirmation",
+      "file": "src/lib/ai/tools/__tests__/entity-creation.test.ts"
+    },
+    {
+      "control": "destructive-confirmation",
+      "file": "src/lib/ai/tools/__tests__/radar-management.test.ts"
+    },
+    {
+      "control": "local-network-exposure",
+      "file": "scripts/__tests__/local-network-boundary.test.ts"
+    },
+    {
+      "control": "document-url-fetch-policy",
+      "file": "src/app/api/documents/url/__tests__/route.test.ts"
+    },
+    {
+      "control": "report-html-and-iframe-policy",
+      "file": "src/lib/__tests__/html-sanitizer.test.ts"
+    },
+    {
+      "control": "report-html-and-iframe-policy",
+      "file": "src/app/reports/[id]/__tests__/print-report-iframe.test.ts"
+    },
+    {
+      "control": "report-html-and-iframe-policy",
+      "file": "src/lib/reports/__tests__/build-download-html.test.ts"
+    },
+    {
+      "control": "report-html-and-iframe-policy",
+      "file": "src/app/share/report/[id]/__tests__/share-iframe.test.ts"
+    },
+    {
+      "control": "document-upload-ownership",
+      "file": "src/app/api/documents/upload/__tests__/route.test.ts"
+    },
+    {
+      "control": "document-download-ownership",
+      "file": "src/lib/__tests__/document-download-authorization.security.test.ts"
+    },
+    {
+      "control": "document-download-ownership",
+      "file": "src/lib/__tests__/document-download-policy.test.ts"
+    },
+    {
+      "control": "document-download-ownership",
+      "file": "src/app/api/documents/download/__tests__/route.test.ts"
+    },
+    {
+      "control": "server-owned-collection-isolation",
+      "file": "src/lib/__tests__/operation-receipt-rules.security.test.ts"
+    },
+    {
+      "control": "server-owned-collection-isolation",
+      "file": "src/lib/__tests__/company-review-rules.security.test.ts"
+    }
+  ]
+}

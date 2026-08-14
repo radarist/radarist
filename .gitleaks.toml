@@ -1,0 +1,53 @@
+# Gitleaks configuration — Radarist release secret-scan gate.
+#
+# Public CI pins an exact detector version and proves it against a known fake
+# credential before scanning the tree. Local scans must use a detector that passes
+# the same positive control. The built-in ruleset is extended, not replaced.
+#
+# Contract: a clean run on the TRACKED tree is a release gate. The only matches on
+# the current tree are documented, non-secret test/doc sentinels, accepted only by
+# exact fake stems below or narrow same-line allowances. No tracked projectable
+# path or rule is blanket-suppressed, so a real high-entropy key still trips the gate.
+#
+# Historical exposure (secrets in commits no longer at HEAD) requires credential
+# rotation and separate history review. This config guards the checked-out tree.
+title = "Radarist gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Non-secret sentinels and build/local artifacts that never enter the tracked tree"
+
+# Paths that are gitignored or generated. CI checks out only tracked files so these
+# never exist there; the exclusions keep a local `npm run secret:scan` quiet too.
+paths = [
+  '''(^|/)\.next/''',
+  '''(^|/)node_modules/''',
+  '''(^|/)coverage/''',
+  '''(^|/)playwright-report/''',
+  '''(^|/)test-results/''',
+  '''(^|/)tmp/''',
+  '''(^|/)\.env\.local$''',
+]
+
+# Documented fake credentials. Each is a low-entropy stem used in docs/tests. A real
+# key would not match these literals, so it would still be reported.
+regexes = [
+  # Radarist MCP key examples/fixtures: tp_live_abc123, _xyz789, _test-key-…, trailing …
+  '''tp_(live|test)_(abc123|def456|xyz789|test-key|example)[A-Za-z0-9_.-]*''',
+  '''tp_(live|test)_[A-Za-z0-9_.-]*\.\.\.''',
+  # Firebase client-config sentinels used when NODE_ENV === 'test' (src/lib/firebase.ts).
+  '''test-api-key''',
+  '''test-project(\.[a-z]+)*''',
+  # SEC-013 redaction fixtures. The redaction suites must feed the redactor
+  # credential-SHAPED input to prove the shape rules fire, so the fixtures look
+  # like keys on purpose. Every one carries the literal `synthetic-` stem, and
+  # the allowlist is keyed to that stem — a real key in the same files, which
+  # would not carry it, is still reported.
+  '''synthetic-(internal-key|neo4j-pw)-[0-9]+''',
+  # The single RFC-7519 example JWT used to prove the `jwt` shape rule fires.
+  # Signed with the well-known "your-256-bit-secret" demo key; it authenticates
+  # nothing. Pinned exactly rather than suppressing the `jwt` rule.
+  '''eyJhbGciOiJIUzI1NiJ9\.eyJzdWIiOiIxMjM0NTY3ODkwIn0\.dBjftJeZ4CVPmB92K27uhbUJU1p1r''',
+]

@@ -1,0 +1,258 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Tells the browser to render native widgets (scrollbars, checkboxes,
+       form-control chrome, autofill) in the light palette — without this,
+       native chrome stays OS-light even while every custom-styled surface
+       (bg-background, etc.) is correctly dark, which is the one part of the
+       page the .dark class alone can't reach. */
+    color-scheme: light;
+
+    /* Neutral brand palette */
+    --brand-purple: 282 44% 18%;
+    /* #2B1A40 - Dark Purple */
+    --brand-blue: 202 100% 37%;
+    /* #0085D4 - Bright Blue */
+    --brand-lightblue: 198 89% 85%;
+    /* #D0EFF9 - Light Blue */
+    --brand-green: 164 37% 47%;
+    /* #4B9F83 - Green */
+    --brand-lightgreen: 159 58% 85%;
+    /* #C2F0E2 - Light Green */
+    --brand-red: 352 68% 56%;
+    /* #D23F51 - Red */
+    --brand-orange: 28 86% 55%;
+    /* #EF7D1F - Orange */
+    --brand-yellow: 68 100% 37%;
+    /* #BDD700 - Yellow/Lime */
+
+    --background: 0 0% 100%;
+    --foreground: 282 44% 18%;
+    /* Dark Purple Text */
+
+    --card: 0 0% 100%;
+    --card-foreground: 282 44% 18%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 282 44% 18%;
+
+    --primary: 202 100% 37%;
+    /* Brand blue */
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 198 89% 96%;
+    /* Very Light Blue */
+    --secondary-foreground: 202 100% 37%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 159 58% 95%;
+    /* Very Light Green */
+    --accent-foreground: 164 37% 47%;
+
+    --destructive: 352 68% 56%;
+    /* Brand red */
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 202 100% 37%;
+
+    --radius: 0.5rem;
+
+    --chart-1: 202 100% 37%;
+    /* Blue */
+    --chart-2: 164 37% 47%;
+    /* Green */
+    --chart-3: 28 86% 55%;
+    /* Orange */
+    --chart-4: 352 68% 56%;
+    /* Red */
+    --chart-5: 68 100% 37%;
+    /* Yellow */
+
+    /* Tech Radar ring/blip palette — theme-aware (consumed by Radar.tsx via PR-3) */
+    --radar-adopt: 160 84% 39%;
+    /* emerald */
+    --radar-trial: 217 91% 60%;
+    /* blue */
+    --radar-assess: 43 96% 56%;
+    /* amber */
+    --radar-hold: 0 84% 60%;
+    /* red */
+    --radar-ring: 215 16% 47%;
+    /* neutral ring stroke */
+
+    /* Sidebar - Light Mode */
+    --sidebar-background: 0 0% 98%;
+    /* White */
+    --sidebar-foreground: 240 5.3% 26.1%;
+    /* Dark Purple Text */
+    --sidebar-primary: 240 5.9% 10%;
+    /* Bright Blue */
+    --sidebar-primary-foreground: 0 0% 98%;
+    /* White */
+    --sidebar-accent: 240 4.8% 95.9%;
+    /* Light Blue for hover */
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    /* Light Border */
+    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  }
+
+  .dark {
+    color-scheme: dark;
+
+    /* Neutral dark theme - like shadcn's default */
+    --background: 240 10% 3.9%;
+    /* Almost black */
+    --foreground: 0 0% 98%;
+
+    --card: 240 10% 6%;
+    /* Slightly lighter than background */
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 6%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 202 90% 55%;
+    /* Brand blue, lifted for legibility on dark — same hue as light --primary (was generic shadcn violet 262) */
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 240 5% 15%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 5% 15%;
+    --muted-foreground: 240 5% 65%;
+
+    --accent: 240 5% 15%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 5% 17%;
+    /* Crisp mid-gray border */
+    --input: 240 5% 17%;
+    --ring: 202 90% 55%;
+    /* Brand blue ring (matches --primary) */
+
+    --chart-1: 202 90% 55%;
+    /* Brand blue (matches light --chart-1 hue) */
+    --chart-2: 173 58% 39%;
+    /* Teal */
+    --chart-3: 43 96% 56%;
+    /* Yellow */
+    --chart-4: 27 96% 61%;
+    /* Orange */
+    --chart-5: 340 82% 52%;
+    /* Pink */
+
+    /* Tech Radar ring/blip palette — dark overrides (lifted for legibility on near-black) */
+    --radar-adopt: 160 70% 45%;
+    --radar-trial: 217 91% 65%;
+    --radar-assess: 43 96% 62%;
+    --radar-hold: 0 84% 65%;
+    --radar-ring: 240 5% 45%;
+
+    /* Sidebar - Dark Mode (Neutral with purple accents) */
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    /* Purple for active items */
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /* Radix ScrollArea (`@radix-ui/react-scroll-area`) wraps its children in an
+     internal `<div style="min-width:100%; display:table">` so it can measure
+     content size for the scrollbar thumb. `display: table` sizes to its
+     content's max-content width instead of respecting the viewport's box, so
+     fluid-width content (e.g. chat message bubbles) that doesn't carry its own
+     shrink constraint can force this wrapper — and everything inside it —
+     wider than the panel, with nothing downstream to clamp it back down. No
+     usage in this app relies on a ScrollArea growing wider than its
+     container (there is no `orientation="horizontal"` ScrollBar anywhere in
+     the codebase), so it's safe to force block layout everywhere.  */
+  [data-radix-scroll-area-viewport] > div {
+    display: block !important;
+    min-width: 0 !important;
+  }
+}
+
+@layer utilities {
+  /* Hide scrollbar but keep scroll functionality */
+  .scrollbar-none {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+}
+
+/* Login page animations */
+@keyframes gradient-slow {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-20px) scale(1.05);
+  }
+}
+
+@keyframes float-delayed {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(20px) scale(0.95);
+  }
+}
+
+.animate-gradient-slow {
+  background-size: 200% 200%;
+  animation: gradient-slow 15s ease infinite;
+}
+
+.animate-float {
+  animation: float 8s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float-delayed 10s ease-in-out infinite;
+}

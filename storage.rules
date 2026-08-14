@@ -1,0 +1,58 @@
+// ============================================================================
+// EMULATOR-ONLY RULES — DO NOT DEPLOY TO A REAL FIREBASE STORAGE BUCKET.
+// ============================================================================
+//
+// Radarist ships as a local-first showcase prototype. These rules grant
+// public read/write on the document, infographics, and visualizations
+// folders because the only intended target is the Firebase emulator started
+// by `npm run firebase:emulators` / `npm run demo`.
+// Browser SDK reads/deletes are evaluated here. Server uploads use the Admin
+// SDK (which bypasses rules) and constrain image prefixes in `src/lib/storage.ts`;
+// document uploads always generate a `documents/<userId>/...` path.
+//
+// Deploying this rules file to a hosted Storage bucket would let any
+// unauthenticated caller read and overwrite user uploads. Anyone planning a
+// hosted deployment must replace this file with least-privilege rules
+// (typically `request.auth != null && request.auth.uid == userId` for the
+// owned paths below).
+//
+// See: docs/LIMITATIONS.md ("Security Limitations") and SECURITY.md.
+// ============================================================================
+
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Mirror the Firestore checkpoint barrier. The launcher sets this document
+    // with the Admin SDK and drains browser writes before a full export. Reads
+    // remain available; Admin SDK and Auth mutations are outside this barrier.
+    function checkpointBarrierActive() {
+      return firestore.exists(/databases/(default)/documents/__radaristRuntime/checkpointBarrier)
+        && firestore.get(/databases/(default)/documents/__radaristRuntime/checkpointBarrier).data.active == true
+        && request.time < firestore.get(/databases/(default)/documents/__radaristRuntime/checkpointBarrier).data.expiresAt;
+    }
+
+    // Documents — Evidence Layer uploads.
+    match /documents/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if !checkpointBarrierActive();
+    }
+
+    // Infographics — Creator agent generated images embedded in reports.
+    match /infographics/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if !checkpointBarrierActive();
+    }
+
+    // Visualizations — user-generated infographics via AI Assistant.
+    match /visualizations/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if !checkpointBarrierActive();
+    }
+
+    // Default deny for anything not matched above.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

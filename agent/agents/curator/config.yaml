@@ -1,0 +1,20 @@
+name: curator
+description: 'Maintains data quality — fills gaps, fixes inconsistencies, enriches incomplete entities'
+model: claude-haiku-4-5
+budget:
+  max_tokens: 15000
+  max_tool_calls: 30
+mcp_servers:
+  internal:
+    - impulse-signals
+  external:
+    - gemini-grounding
+    - exa
+    - firecrawl
+    - arxiv
+    - github
+
+# Task 0.10: SDK 0.2.109 subagent controls
+max_turns: 20
+effort: low
+permission_mode: acceptEdits

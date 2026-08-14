@@ -1,0 +1,66 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "ignore": [
+    "agent/dist/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/.next/**",
+    "**/coverage/**",
+    "**/node_modules/**",
+    "tmp/**",
+    "test-results/**",
+    "playwright-report/**",
+    "emulator-data/**",
+    "docs/**"
+  ],
+  "workspaces": {
+    ".": {
+      "entry": [
+        "src/app/**/{page,layout,route,loading,error}.tsx",
+        "src/app/**/route.ts",
+        "src/app/actions.ts",
+        "src/lib/reports/report-composer.ts",
+        "scripts/**/*.{ts,mjs,js,sh}",
+        "tests/**/*.{ts,tsx}",
+        "src/**/__tests__/**/*.{ts,tsx}",
+        "src/**/*.test.{ts,tsx}",
+        "jest.setup.{ts,js}",
+        "next.config.{js,mjs,ts}",
+        "postcss.config.{js,mjs,ts}",
+        "tailwind.config.{js,mjs,ts}",
+        "eslint.config.{js,mjs,ts}"
+      ],
+      "project": [
+        "src/**/*.{ts,tsx,mjs,js}",
+        "scripts/**/*.{ts,mjs,js}"
+      ]
+    },
+    "agent": {
+      "entry": [
+        "src/{index,cli,orchestrator,orchestrator-lite,profiles}.ts",
+        "src/sandbox/index.ts",
+        "jest.config.ts",
+        "tests/**/*.test.ts"
+      ],
+      "project": [
+        "src/**/*.ts",
+        "tests/**/*.ts"
+      ]
+    }
+  },
+  "playwright": false,
+  "ignoreBinaries": [
+    "gitleaks"
+  ],
+  "ignoreIssues": {
+    ".github/workflows/*.yml": [
+      "binaries"
+    ]
+  },
+  "ignoreExportsUsedInFile": true,
+  "rules": {
+    "exports": "warn",
+    "types": "warn",
+    "duplicates": "error"
+  }
+}

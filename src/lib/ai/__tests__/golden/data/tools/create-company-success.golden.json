@@ -1,0 +1,16 @@
+{
+  "success": true,
+  "data": {
+    "message": "Company 'Acme AI' created successfully",
+    "company": {
+      "id": "<ID>",
+      "name": "Acme AI",
+      "description": "AI-powered automation platform",
+      "type": ["Startup", "Vendor"],
+      "industry": ["AI", "Automation"],
+      "size": "Startup",
+      "status": "Watching",
+      "website": "https://acme-ai.example.com"
+    }
+  }
+}

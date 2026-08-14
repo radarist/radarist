@@ -1,0 +1,102 @@
+# Neo4j Docker Compose Configuration for Radarist Studio
+# Phase 5: GraphRAG Reasoning Engine
+#
+# Usage (--env-file is required so NEO4J_AUTH below resolves your local
+# .env.local password instead of the change-me-required fallback; the
+# npm run neo4j:* scripts already pass this flag):
+#   Start:   docker-compose --env-file .env.local -f docker-compose.neo4j.yml up -d
+#   Stop:    docker-compose --env-file .env.local -f docker-compose.neo4j.yml down
+#   Logs:    docker-compose --env-file .env.local -f docker-compose.neo4j.yml logs -f
+#   Reset:   docker-compose --env-file .env.local -f docker-compose.neo4j.yml down -v
+#
+# Browser UI: http://localhost:7474
+# Bolt URI:   bolt://localhost:7687
+
+version: '3.8'
+
+services:
+  neo4j:
+    image: neo4j:5.15.0-community
+    container_name: radarist-neo4j
+    labels:
+      com.radarist.local-runtime: durable:default
+    ports:
+      # Host publications are loopback-only; container-network clients continue
+      # to use neo4j:7474 / neo4j:7687 without going through these mappings.
+      - '127.0.0.1:7474:7474' # HTTP port for Neo4j Browser
+      - '127.0.0.1:7687:7687' # Bolt port for local driver connections
+    environment:
+      # Authentication
+      #
+      # AUTH-BURST DIAGNOSTIC (P3-B, graph-foundation NEEDS-GUARD #8):
+      # The live instance has shown bursts of 100-321 auth rejections in
+      # debug.log. Working hypothesis after the repo-wide credential audit
+      # (no hardcoded Neo4j password/URI exists in tree — every client reads
+      # NEO4J_URI/NEO4J_USER/NEO4J_PASSWORD from env): the bursts came from
+      # e2e/dev servers started with a mismatched NEO4J_PASSWORD, i.e. an env
+      # file rotated AFTER the container's first boot. The container keeps
+      # its first-boot password in the data volume, so a rotated env value
+      # fails auth on every retry of every pooled connection (hence bursts).
+      # P0 already repointed `e2e:serve` to the selftest-profile port, which
+      # removes the main mismatched client. If bursts recur: run
+      # `npx tsx scripts/doctor.ts` (password-parity pre-flight compares the
+      # container's NEO4J_AUTH to .env.local) and `npm run neo4j:reset` to
+      # re-key the container.
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:-change-me-required}
+
+      # Memory Configuration (adjust based on your system)
+      NEO4J_server_memory_heap_initial__size: 512m
+      NEO4J_server_memory_heap_max__size: 2G
+      NEO4J_server_memory_pagecache_size: 1G
+
+      # Performance settings
+      NEO4J_db_transaction_timeout: 30s
+
+      # Enable APOC and GDS
+      NEO4J_dbms_security_procedures_unrestricted: apoc.*,gds.*
+      NEO4J_dbms_security_procedures_allowlist: apoc.*,gds.*
+      NEO4J_PLUGINS: '["apoc", "graph-data-science"]'
+
+      # Logging
+      NEO4J_dbms_logs_query_enabled: 'INFO'
+      NEO4J_dbms_logs_query_threshold: 500ms
+    volumes:
+      # Persist data between restarts
+      - neo4j_data:/data
+      # Persist logs
+      - neo4j_logs:/logs
+      # Import directory for CSV imports
+      - neo4j_import:/var/lib/neo4j/import
+      # Plugins directory
+      - neo4j_plugins:/plugins
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '--spider', 'http://localhost:7474']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - radarist-network
+
+networks:
+  radarist-network:
+    driver: bridge
+
+volumes:
+  neo4j_data:
+    name: radarist_neo4j_data
+    labels:
+      com.radarist.local-runtime: durable:default
+  neo4j_logs:
+    name: radarist_neo4j_logs
+    labels:
+      com.radarist.local-runtime: durable:default
+  neo4j_import:
+    name: radarist_neo4j_import
+    labels:
+      com.radarist.local-runtime: durable:default
+  neo4j_plugins:
+    name: radarist_neo4j_plugins
+    labels:
+      com.radarist.local-runtime: durable:default

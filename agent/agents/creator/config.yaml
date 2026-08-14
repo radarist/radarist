@@ -1,0 +1,42 @@
+name: creator
+description: 'Generates professional HTML reports and shareable artifacts from graph knowledge'
+# The creator writes the user-visible report and must reliably honor explicit
+# user constraints (theme/sections/format) over learned defaults, so the
+# strongest reasoning tier is warranted here.
+# Override per-deploy via IMPULSE_AGENT_CREATOR_MODEL.
+model: claude-opus-4-8
+budget:
+  max_tokens: 100000
+  # The budget covers discovery, graph reads, one render/embed pair per figure,
+  # drafting, publication, and a bounded revision pass.
+  max_tool_calls: 120
+mcp_servers:
+  internal:
+    - impulse-reports
+    - impulse-research
+  external:
+    # Listed first so the SDK surfaces renderDiagram for any "chart" /
+    # "diagram" / "infographic" intent. This is the publication-grade tier:
+    # 10 chart kinds (sankey, bubble, risk-matrix, treemap, calendar-heatmap,
+    # flowchart, sequence, gantt, mindmap, tech-radar) with auto-select +
+    # vision-LLM critic. Prefer this for data charts and process/relationship
+    # diagrams. See PROFILE.md for the decision rubric.
+    - super-graph
+    # Nano Banana Pro — for non-data visuals (hero images, illustrations,
+    # concept art, infographic-style images). NOT for data charts.
+    - gemini-image
+    # Fallback chart engine for kinds super-graph doesn't cover yet
+    # (word-cloud, violin, funnel, etc.). Prefer super-graph when both apply.
+    - antv-chart
+    - playwright
+    - exa
+
+# Task 0.10: SDK 0.2.109 subagent controls
+max_turns: 25
+# high effort: the creator must follow explicit user styling/section constraints
+# and produce top-quality reports — adaptive thinking depth helps it disambiguate
+# "apply learned default" vs "obey the user's explicit request now".
+effort: high
+permission_mode: acceptEdits
+# IMRAD whitepapers + landscape reports take longer than 30 min. Opt into 90.
+timeoutMinutes: 90

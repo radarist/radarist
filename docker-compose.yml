@@ -1,0 +1,212 @@
+# Radarist Studio — Docker Compose (EXPERIMENTAL / UNSUPPORTED for v0.1.0-prototype)
+# This container path is a work in progress and NOT the supported demo.
+# Known gaps: no seed step, emulator binds 127.0.0.1 inside the container, client Firebase config is baked at build time.
+# Supported path:  npm install && npm run demo:full   (see README Quick Start)
+
+services:
+  # ---------------------------------------------------------------------------
+  # App — Next.js application (port 9002)
+  # ---------------------------------------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      # Publish only on the host loopback interface. The app still listens on
+      # 0.0.0.0 inside the container so the other Compose services can reach it.
+      - '127.0.0.1:9002:9002'
+    env_file:
+      - path: .env.docker
+        required: false
+    environment:
+      NEO4J_URI: bolt://neo4j:7687
+      NEO4J_USER: neo4j
+      NEO4J_PASSWORD: ${NEO4J_PASSWORD:-change-me-required}
+      INNGEST_DEV_SERVER_URL: http://inngest:8288
+      INNGEST_DEV: http://inngest:8288
+      INNGEST_EVENT_KEY: ${INNGEST_EVENT_KEY:-local-dev}
+      INNGEST_SIGNING_KEY: ${INNGEST_SIGNING_KEY:-local-dev}
+      # OPS-004: the in-process mission worker (Inngest, inside THIS container)
+      # routes every internal MCP call to the app's own /api/mcp mount and runs a
+      # mandatory preflight before spending. The app reaches itself on the
+      # container loopback, so the base is localhost:9002. This is REQUIRED — an
+      # absent value fails the preflight loudly (mcp-base-url-missing).
+      IMPULSE_MCP_BASE_URL: http://localhost:9002/api/mcp
+      # Admin-scoped internal service key the worker preflight probes with. Kept
+      # env-only (no default baked into this file). `${VAR:?msg}` makes Compose
+      # abort with `msg` when the variable is unset/empty in the shell or the
+      # project .env — never falls back to a read-only key.
+      IMPULSE_INTERNAL_KEY: ${IMPULSE_INTERNAL_KEY:?IMPULSE_INTERNAL_KEY must be set (admin-scoped internal MCP service key)}
+      HOSTNAME: 0.0.0.0
+    depends_on:
+      neo4j:
+        condition: service_healthy
+      inngest:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'wget', '--spider', '-q', 'http://localhost:9002/api/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - radarist-network
+
+  # ---------------------------------------------------------------------------
+  # Agent — Impulse orchestrator (no ports, runs sweep loop)
+  # ---------------------------------------------------------------------------
+  agent:
+    profiles: ['agents']
+    build:
+      context: ./agent
+      dockerfile: Dockerfile
+    env_file:
+      - path: .env.docker
+        required: false
+    environment:
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      IMPULSE_MCP_BASE_URL: http://app:9002/api/mcp
+      # OPS-004: the standalone sweep agent authenticates to the app's MCP with a
+      # real key — never a blank one. Its own contract reads IMPULSE_API_KEY; when
+      # unset it falls back to the same admin-scoped IMPULSE_INTERNAL_KEY the app
+      # requires, so a valid key is always present (no empty-key sweeps that then
+      # fail every tool call). Env-only.
+      IMPULSE_API_KEY: ${IMPULSE_API_KEY:-${IMPULSE_INTERNAL_KEY:?set IMPULSE_INTERNAL_KEY (or IMPULSE_API_KEY) for the sweep agent}}
+      NEO4J_URI: bolt://neo4j:7687
+      NEO4J_USERNAME: ${NEO4J_USERNAME:-neo4j}
+      NEO4J_PASSWORD: ${NEO4J_PASSWORD:-change-me-required}
+      EXA_API_KEY: ${EXA_API_KEY:-}
+      FIRECRAWL_API_KEY: ${FIRECRAWL_API_KEY:-}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      # GOOGLE_CX_ID — deprecated (Google Custom Search closed to new customers)
+      # CRUNCHBASE_API_KEY — paid API, uncomment if subscribed
+    volumes:
+      - workspace:/workspace
+      - ./agent/agents:/agents:ro
+    command: ['sweep']
+    depends_on:
+      app:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp
+    restart: unless-stopped
+    networks:
+      - radarist-network
+
+  # ---------------------------------------------------------------------------
+  # Neo4j — Graph database (ports 7474/7687)
+  # ---------------------------------------------------------------------------
+  neo4j:
+    image: neo4j:5.15.0-community
+    container_name: radarist-neo4j
+    ports:
+      - '127.0.0.1:7474:7474'
+      - '127.0.0.1:7687:7687'
+    environment:
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:-change-me-required}
+      NEO4J_server_memory_heap_initial__size: 512m
+      NEO4J_server_memory_heap_max__size: 1G
+      NEO4J_server_memory_pagecache_size: 512m
+      NEO4J_db_transaction_timeout: 30s
+      NEO4J_PLUGINS: '["apoc"]'
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '--spider', 'http://localhost:7474']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - radarist-network
+
+  # ---------------------------------------------------------------------------
+  # Inngest — Background job dev server (port 8288)
+  # ---------------------------------------------------------------------------
+  inngest:
+    # LOCAL-013: version-pinned to match the `inngest-cli` the supported
+    # launcher runs. The persisted queue is a versioned on-disk store, so
+    # `:latest` could silently change its format between `docker compose up`
+    # runs and strand the state the volume below exists to preserve.
+    image: inngest/inngest:v1.36.0
+    container_name: radarist-inngest
+    command: ['inngest', 'dev', '--host', '0.0.0.0', '--port', '8288', '--persist']
+    working_dir: /state
+    volumes:
+      # Without a persisted queue the container discards every queued event,
+      # in-flight function, and pending retry on restart.
+      - inngest-state:/state
+    ports:
+      - '127.0.0.1:8288:8288'
+    environment:
+      INNGEST_DEV: '1'
+      INNGEST_LOG_LEVEL: info
+      INNGEST_EVENT_API_URL: http://app:9002/api/inngest
+    healthcheck:
+      test: ['CMD', 'wget', '--spider', '-q', 'http://localhost:8288']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - radarist-network
+
+  # ---------------------------------------------------------------------------
+  # Firebase Emulator — Auth + Firestore + UI (dev profile only)
+  # ---------------------------------------------------------------------------
+  firebase-emulator:
+    image: andreysenov/firebase-tools:latest
+    container_name: radarist-firebase-emulator
+    ports:
+      - '127.0.0.1:4000:4000'
+      - '127.0.0.1:8080:8080'
+      - '127.0.0.1:9099:9099'
+      - '127.0.0.1:9199:9199'
+    volumes:
+      - ./firebase.json:/home/node/firebase.json:ro
+      - ./firestore.rules:/home/node/firestore.rules:ro
+      - ./firestore.indexes.json:/home/node/firestore.indexes.json:ro
+      - firebase_data:/home/node/data
+    command:
+      [
+        'firebase',
+        'emulators:start',
+        '--project',
+        'demo-radarist',
+        '--import',
+        '/home/node/data',
+        '--export-on-exit',
+        '/home/node/data',
+      ]
+    healthcheck:
+      test: ['CMD', 'wget', '--spider', '-q', 'http://localhost:4000']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    profiles:
+      - dev
+    restart: unless-stopped
+    networks:
+      - radarist-network
+
+networks:
+  radarist-network:
+    driver: bridge
+
+volumes:
+  neo4j_data:
+  neo4j_logs:
+  firebase_data:
+  workspace:
+  # LOCAL-013: the Inngest dev server's persisted queue. A mounted directory
+  # preserves queued and in-flight work across a restart; it does NOT make
+  # execution exactly-once (see BUILD-029).
+  inngest-state:

@@ -1,0 +1,28 @@
+{
+  "$comment": "Mission workspace Claude Code settings — provisioned to <workspace>/.claude/settings.json. Hooks enforce what the skills persuade: affected checks re-run on every edit; sessions cannot end without artifacts + green checks + an honest handoff.",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/post-tool-test.sh\"",
+            "timeout": 180
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop-gate.sh\"",
+            "timeout": 600
+          }
+        ]
+      }
+    ]
+  }
+}

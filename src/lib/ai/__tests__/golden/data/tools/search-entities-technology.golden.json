@@ -1,0 +1,42 @@
+{
+  "success": true,
+  "data": {
+    "entityType": "technology",
+    "query": "react",
+    "count": 2,
+    "results": [
+      {
+        "id": "tech-1",
+        "name": "React",
+        "description": "A JavaScript library for building user interfaces",
+        "type": "technology",
+        "metadata": {
+          "category": "framework",
+          "tags": [
+            "frontend",
+            "javascript"
+          ],
+          "websiteUrl": null,
+          "linkedCompanies": [],
+          "linkedUseCases": []
+        }
+      },
+      {
+        "id": "tech-2",
+        "name": "React Native",
+        "description": "A framework for building native apps with React",
+        "type": "technology",
+        "metadata": {
+          "category": "framework",
+          "tags": [
+            "mobile",
+            "cross-platform"
+          ],
+          "websiteUrl": null,
+          "linkedCompanies": [],
+          "linkedUseCases": []
+        }
+      }
+    ]
+  }
+}
